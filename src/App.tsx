@@ -20,7 +20,7 @@ import Resources from './pages/resources';
 import VistaPaciente from './pages/patient';
 import VistaSession from './pages/patient_id';
 import AuthLayout from './layout/auth'; // Layout para autenticación
-import { API_LOCAL } from './hooks/apis';
+import { API_LOCAL, API_URL } from './hooks/apis';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -41,7 +41,7 @@ function App() {
     // Aquí iría la lógica para comprobar la autenticación, por ejemplo, haciendo una llamada a la API
     const checkAuth = async () => {
       try {
-        const response = await fetch(`${API_LOCAL}/check-auth`, {
+        const response = await fetch(`${API_URL}/check-auth`, {
           headers: {
             'Content-Type': 'application/json',
           },

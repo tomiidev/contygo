@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import ImagenSvg from '@/images/svg';
-import { API_LOCAL } from '@/hooks/apis';  // Si tienes un archivo que gestiona las URLs de la API
+import { API_LOCAL, API_URL } from '@/hooks/apis';  // Si tienes un archivo que gestiona las URLs de la API
 
 interface Errors {
   email: string;
@@ -45,7 +45,7 @@ const SignIn: React.FC = () => {
     setError('');
 
     try {
-      const response = await fetch(`${API_LOCAL}/sign_in_with_email`, {
+      const response = await fetch(`${API_URL}/sign_in_with_email`, {
         method: 'POST',
         mode:"cors",
         credentials: 'include', // Enviar cookies HTTP-only automáticamente
