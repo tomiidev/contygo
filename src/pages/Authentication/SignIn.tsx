@@ -67,7 +67,8 @@ const SignIn: React.FC = () => {
       console.log('Login successful:', result);
 
       // Redirige al usuario a la página de inicio o dashboard
-      window.location.href = "http://localhost:5173";
+      window.location.href = "https://contygo.vercel.app";
+     /*  window.location.href = "http://localhost:5173"; */
     } catch (err) {
       setLoading(false);
       setError('Error de conexión. Intenta de nuevo más tarde.');
