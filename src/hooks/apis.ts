@@ -1,0 +1,3 @@
+/* export const API_URL = "https://s.veterinarialacomercial.com/api" */
+export const API_URL = "https://server.unabuenauy.com/api"
+export const API_LOCAL = "http://localhost:3001/api" 
