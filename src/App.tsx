@@ -56,16 +56,21 @@ function App() {
           setIsAuthenticated(true);
         } else {
           setIsAuthenticated(false);
-          navigate('/auth/signin');
+  
+          // Si el usuario ya está en una página de autenticación, no lo redirijas
+          if (!pathname.startsWith('/auth')) {
+            navigate('/auth/signin', { replace: true });
+          }
         }
       } catch (error) {
+        console.error("Error verificando autenticación:", error);
         setIsAuthenticated(false);
-        navigate('/auth/signin');
       }
     };
   
     checkAuth();
-  }, [navigate]);
+  }, [navigate, pathname]);
+  
   
   // Lógica de renderizado condicional
   if (loading) {
