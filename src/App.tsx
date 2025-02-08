@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 
 import Loader from './common/Loader';
@@ -37,38 +37,36 @@ function App() {
     setTimeout(() => setLoading(false), 1000); // Simulamos un delay de carga de 1 segundo
   }, []);
 
+  const checkedAuth = useRef(false);
+
   useEffect(() => {
-    // Aquí iría la lógica para comprobar la autenticación, por ejemplo, haciendo una llamada a la API
+    if (checkedAuth.current) return; // Evita múltiples llamadas
+    checkedAuth.current = true;
+  
     const checkAuth = async () => {
       try {
         const response = await fetch(`${API_URL}/check-auth`, {
           method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          mode:"cors",
-          credentials: 'include', // Enviar cookies HTTP-only automáticamente
+          headers: { 'Content-Type': 'application/json' },
+          mode: "cors",
+          credentials: 'include',
         });
-
+  
         if (response.ok) {
           setIsAuthenticated(true);
         } else {
           setIsAuthenticated(false);
-          if (!pathname.includes('/auth/')) {
-            navigate('/auth/signin'); // Redirigir a la página de login si no está autenticado
-          }
+          navigate('/auth/signin');
         }
       } catch (error) {
         setIsAuthenticated(false);
-        if (!pathname.includes('/auth/')) {
-          navigate('/auth/signin'); // Redirigir a la página de login en caso de error
-        }
+        navigate('/auth/signin');
       }
     };
-
+  
     checkAuth();
-  }, [navigate, pathname]);
-
+  }, [navigate]);
+  
   // Lógica de renderizado condicional
   if (loading) {
     return <Loader />; // Muestra un Loader mientras carga la página
