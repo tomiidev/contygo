@@ -9,7 +9,7 @@ interface Errors {
 }
 
 const SignIn: React.FC = () => {
-
+  const navigate = useNavigate();
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [errors, setErrors] = useState<Errors>({ email: '', password: '' });
@@ -47,7 +47,7 @@ const SignIn: React.FC = () => {
     try {
       const response = await fetch(`${API_URL}/sign_in_with_email`, {
         method: 'POST',
-        mode:"cors",
+        mode: "cors",
         credentials: 'include', // Enviar cookies HTTP-only automáticamente
         headers: {
           'Content-Type': 'application/json',
@@ -67,8 +67,10 @@ const SignIn: React.FC = () => {
       console.log('Login successful:', result);
 
       // Redirige al usuario a la página de inicio o dashboard
-      window.location.replace("https://contygo.vercel.app")
-     /*  window.location.href = "http://localhost:5173"; */
+
+      navigate('/');
+      /*       window.location.replace("https://contygo.vercel.app") */
+      /*  window.location.href = "http://localhost:5173"; */
     } catch (err) {
       setLoading(false);
       setError('Error de conexión. Intenta de nuevo más tarde.');
