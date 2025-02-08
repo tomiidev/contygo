@@ -42,7 +42,7 @@ function App() {
     const checkAuth = async () => {
       try {
         const response = await fetch(`${API_URL}/check-auth`, {
-          method: 'POST',
+          method: 'GET',
           headers: {
             'Content-Type': 'application/json',
           },
