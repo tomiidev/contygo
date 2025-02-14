@@ -70,7 +70,7 @@ const SignIn: React.FC = () => {
 
      /*  navigate('/') */
         /*   window.location.replace("http://localhost:5173")  */
-          window.location.replace("https://contygo.vercel.app") 
+          window.location.replace("https://opawork.app") 
       /*  window.location.href = "http://localhost:5173"; */
     } catch (err) {
       setLoading(false);
