@@ -1,8 +1,11 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import Resources from './resources';
+import { API_LOCAL } from '@/hooks/apis';
 
 // Tipos de datos
 type Sesion = {
+    _id: string;
     fecha: string;
     especialista: string;
     tipo: string;
@@ -13,107 +16,154 @@ type Sesion = {
     materiales: string[];
 };
 
-type Paciente = {
-    nombre: string;
-    sesiones: Sesion[];
-};
 
-const sesionesEjemplo: Sesion[] = Array.from({ length: 10 }, (_, i) => ({
-    fecha: `2025-02-${String(i + 1).padStart(2, '0')}`,
-    especialista: 'Dr. Juan Pérez',
-    tipo: 'Seguimiento clínico',
-    duracion: '60 minutos',
-    nota: `Notas de la sesión ${i + 1}`,
-    evolucion: `Evolución del paciente sesión ${i + 1}`,
-    recomendaciones: `Recomendaciones para la sesión ${i + 1}`,
-    materiales: ['Folleto de ansiedad', 'Ejercicios de relajación']
-}));
 
-const pacienteData: Paciente = {
-    nombre: 'Carlos Gómez',
-    sesiones: sesionesEjemplo
-};
+interface ApiResponse {
+    data: Sesion[];
+}
 
 const VistaSesion: React.FC = () => {
+    const [session, setSession] = useState<Sesion | null>(null);
+    const [loading, setLoading] = useState<boolean>(true);
+    const [error, setError] = useState<string | null>(null);
     const { sessionId } = useParams<{ sessionId: string }>();
-    const sessionIndex = Number(sessionId);
-    
-    if (isNaN(sessionIndex) || sessionIndex < 0 || sessionIndex >= pacienteData.sesiones.length) {
-        return <p className="text-red-500">Sesión no encontrada</p>;
-    }
+    const [isModalOpen, setIsModalOpen] = useState<Record<string, boolean>>({});
 
-    const sesionActual = pacienteData.sesiones[sessionIndex];
-    const [notaSesion, setNotaSesion] = useState(sesionActual.nota);
-    const [evolucion, setEvolucion] = useState(sesionActual.evolucion);
-    const [recomendaciones, setRecomendaciones] = useState(sesionActual.recomendaciones);
-    const [materiales, setMateriales] = useState(sesionActual.materiales);
-    const [nuevoMaterial, setNuevoMaterial] = useState('');
+    // Obtener la sesión cuando cambia sessionId
+    useEffect(() => {
+        const obtenerSesion = async (): Promise<void> => {
+            try {
+                const response = await fetch(`${API_LOCAL}/get-session-byid/${sessionId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    mode: 'cors',
+                    credentials: 'include'
+                });
+
+                if (!response.ok) throw new Error('Error al obtener la sesión');
+                const result: ApiResponse = await response.json();
+                if (Array.isArray(result.data)) {
+                    setSession(result.data[0]); // Asigna solo el primer paciente
+
+                } else {
+                    throw new Error('Los datos de las citas no están en el formato esperado');
+                };
+            } catch (err) {
+                setError((err as Error).message);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        obtenerSesion();
+    }, [sessionId]);
+
+    const toggleModal = (modal: string) => {
+        setIsModalOpen(prev => ({ ...prev, [modal]: !prev[modal] }));
+    };
 
     const guardarCambios = () => {
-        sesionActual.nota = notaSesion;
-        sesionActual.evolucion = evolucion;
-        sesionActual.recomendaciones = recomendaciones;
-        sesionActual.materiales = materiales;
         alert('Cambios guardados con éxito');
     };
 
-    const agregarMaterial = () => {
-        if (nuevoMaterial.trim()) {
-            setMateriales([...materiales, nuevoMaterial]);
-            setNuevoMaterial('');
-        }
-    };
+    if (loading) return <p>Cargando sesión...</p>;
+    if (error) return <p className="text-red-500">{error}</p>;
+    if (!session) return <p>No se encontró la sesión</p>;
 
     return (
-        <div className="bg-white p-6 rounded-lg shadow-lg">
-            <h1 className="text-2xl font-bold mb-4">Información de la sesión</h1>
-            
-            <div className="grid grid-cols-2 gap-4 mb-6">
-                <div>
-                    <p><strong>Fecha:</strong> {sesionActual.fecha}</p>
-                    <p><strong>Duración:</strong> {sesionActual.duracion}</p>
-                </div>
-                <div>
-                    <p><strong>Especialista:</strong> {sesionActual.especialista}</p>
-                    <p><strong>Tipo de sesión:</strong> {sesionActual.tipo}</p>
-                </div>
-            </div>
+        <div className="bg-white p-8 rounded-lg border space-y-8">
+            <h1 className="text-3xl font-bold text-gray-800 mb-8">Detalles de la sesión</h1>
 
-            <div className="mb-6 bg-gray-100 p-4 rounded">
-                <h2 className="text-xl font-semibold mb-2">Notas de la sesión</h2>
-                <textarea className="w-full p-2 border rounded" rows={4} value={notaSesion} onChange={e => setNotaSesion(e.target.value)} />
-            </div>
-
-            <div className="mb-6 bg-gray-100 p-4 rounded">
-                <h2 className="text-xl font-semibold mb-2">Evolución del paciente</h2>
-                <textarea className="w-full p-2 border rounded" rows={4} value={evolucion} onChange={e => setEvolucion(e.target.value)} />
-            </div>
-
-            <div className="mb-6 bg-gray-100 p-4 rounded">
-                <h2 className="text-xl font-semibold mb-2">Recomendaciones y próximos pasos</h2>
-                <textarea className="w-full p-2 border rounded" rows={4} value={recomendaciones} onChange={e => setRecomendaciones(e.target.value)} />
-            </div>
-
-            <div className="mb-6 bg-gray-100 p-4 rounded">
-                <h2 className="text-xl font-semibold mb-2">Materiales brindados</h2>
-                <ul>
-                    {materiales.map((mat, index) => (
-                        <li key={index} className="border-b py-1">{mat}</li>
+            {/* Datos Generales de la sesión */}
+            <div className="grid grid-cols-1 md:grid-cols-1 gap-8 mb-8">
+                <div className="bg-gray-50 p-6 rounded-lg border border-gray-200">
+                    {['date', 'time', 'nombre', 'reason'].map((field) => (
+                        <p key={field} className="text-lg text-gray-700 mb-2">
+                            <strong>{field.charAt(0).toUpperCase() + field.slice(1)}:</strong>
+                            <span
+                                onClick={() => toggleModal(field)}
+                                className="text-indigo-700 cursor-pointer hover:underline"
+                            >
+                                {session[field as keyof Sesion]}
+                            </span>
+                        </p>
                     ))}
-                </ul>
-                <input
-                    type="text"
-                    className="w-full p-2 border rounded mt-2"
-                    placeholder="Agregar nuevo material"
-                    value={nuevoMaterial}
-                    onChange={(e) => setNuevoMaterial(e.target.value)}
-                />
-                <button className="mt-2 px-4 py-2 bg-blue-500 text-white rounded" onClick={agregarMaterial}>Agregar</button>
+                </div>
+            </div>
+                <div className="bg-gray-50 p-6 rounded-lg  border border-gray-200">
+                    <h3 className="font-semibold text-xl text-gray-800">Resumen:</h3>
+                    {['evolucion', 'recomendaciones'].map((field) => (
+                        <p key={field} className="text-lg text-gray-700 mb-2">
+                            <strong>{field.charAt(0).toUpperCase() + field.slice(1)}:</strong>
+                            <span
+                                onClick={() => toggleModal(field)}
+                                className="text-indigo-700 cursor-pointer hover:underline"
+                            >
+                                {session[field as keyof Sesion]}
+                            </span>
+                        </p>
+                    ))}
+                </div>
+
+          
+
+            {/* Botones de acción */}
+            <div className="flex justify-end space-x-4 mb-8">
+                <button
+                    className="px-6 py-3 bg-indigo-600 text-white rounded-lg shadow-md hover:bg-indigo-700 transition"
+                    onClick={guardarCambios}
+                >
+                    Guardar Cambios
+                </button>
             </div>
 
-            <div className="flex space-x-4">
-                <button className="px-4 py-2 bg-green-500 text-white rounded" onClick={guardarCambios}>Guardar Cambios</button>
-                <button className="px-4 py-2 bg-purple-500 text-white rounded">Generar Diagrama</button>
+            {/* Modales de edición */}
+            {Object.keys(isModalOpen).map((modal) =>
+                isModalOpen[modal] ? (
+                    <Modal
+                        key={modal}
+                        title={`Editar ${modal.charAt(0).toUpperCase() + modal.slice(1)}`}
+                        value={session[modal as keyof Sesion]}
+                        onSave={(newValue) => {
+                            setSession({ ...session, [modal]: newValue });
+                            toggleModal(modal);
+                        }}
+                        onClose={() => toggleModal(modal)}
+                    />
+                ) : null
+            )}
+        </div>
+    );
+};
+
+// Componente Modal
+const Modal = ({ title, value, onSave, onClose }: { title: string; value: string; onSave: (newValue: string) => void; onClose: () => void }) => {
+    const [inputValue, setInputValue] = useState(value);
+
+    return (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+            <div className="bg-white p-6 rounded-lg w-11/12 md:w-1/3 transition-all">
+                <h2 className="text-2xl font-semibold mb-4 text-gray-800">{title}</h2>
+                <textarea
+                    className="w-full p-4 border-2 rounded-lg text-gray-700"
+                    rows={6}
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                />
+                <div className="mt-4 flex justify-end">
+                    <button
+                        className="px-4 py-2 bg-gray-500 text-white rounded-lg mr-4 hover:bg-gray-600"
+                        onClick={onClose}
+                    >
+                        Cerrar
+                    </button>
+                    <button
+                        className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+                        onClick={() => onSave(inputValue)}
+                    >
+                        Guardar
+                    </button>
+                </div>
             </div>
         </div>
     );

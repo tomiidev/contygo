@@ -7,7 +7,7 @@ import TableThree from '../components/Tables/TableThree';
 const Tables = () => {
   return (
     <>
-      <Breadcrumb pageName="Pacientes" />
+      <Breadcrumb pageName="Pacientes" number={10}/>
 
       <div className="flex flex-col gap-10">
        {/*  <TableOne /> */}

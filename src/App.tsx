@@ -21,6 +21,8 @@ import VistaPaciente from './pages/patient';
 import VistaSession from './pages/patient_id';
 import AuthLayout from './layout/auth'; // Layout para autenticación
 import { API_LOCAL, API_URL } from './hooks/apis';
+import ListaEspera from './pages/wait_list';
+import PsychologistProfile from './pages/landing/landing';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -39,6 +41,38 @@ function App() {
 
   const checkedAuth = useRef(false);
 
+/*   useEffect(() => {
+    if (checkedAuth.current) return; // Evita múltiples llamadas
+    checkedAuth.current = true;
+
+    const checkAuth = async () => {
+      try {
+        const response = await fetch(`${API_LOCAL}/check-auth`, {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+          mode: "cors",
+          credentials: 'include',
+        });
+
+        if (response.ok) {
+          setIsAuthenticated(true);
+        } else {
+          setIsAuthenticated(false);
+
+          // Si el usuario ya está en una página de autenticación, no lo redirijas
+          if (!pathname.startsWith('/auth')) {
+            navigate('/auth/signin', { replace: true });
+          }
+        }
+      } catch (error) {
+        console.error("Error verificando autenticación:", error);
+        setIsAuthenticated(false);
+      }
+    };
+
+    checkAuth();
+  }, [navigate, pathname]);
+ */
   useEffect(() => {
     if (checkedAuth.current) return; // Evita múltiples llamadas
     checkedAuth.current = true;
@@ -52,13 +86,16 @@ function App() {
           credentials: 'include',
         });
   
-        if (response.ok) {
+        const data = await response.json(); // Verifica la respuesta correctamente
+  
+        if (response.ok && data.authenticated) { // Validar que el usuario esté autenticado
           setIsAuthenticated(true);
         } else {
           setIsAuthenticated(false);
   
-          // Si el usuario ya está en una página de autenticación, no lo redirijas
-          if (!pathname.startsWith('/auth')) {
+          // Excluir rutas públicas de la redirección
+          const isPublicRoute = pathname.startsWith('/p') || pathname.startsWith('/auth');
+          if (!isPublicRoute) {
             navigate('/auth/signin', { replace: true });
           }
         }
@@ -70,7 +107,6 @@ function App() {
   
     checkAuth();
   }, [navigate, pathname]);
-  
   
   // Lógica de renderizado condicional
   if (loading) {
@@ -103,6 +139,15 @@ function App() {
                 <>
                   <PageTitle title="Signup | TailAdmin - Tailwind CSS Admin Dashboard Template" />
                   <SignUp />
+                </>
+              }
+            />
+            <Route
+              path="/p"
+              element={
+                <>
+                  <PageTitle title="Psychologist Profile | TailAdmin - Tailwind CSS Admin Dashboard Template" />
+                  <PsychologistProfile />
                 </>
               }
             />
@@ -168,6 +213,7 @@ function App() {
                 </>
               }
             />
+            <Route path="/waitlist" element={<ListaEspera />} />
             <Route path="/patients" element={<Tables />} />
             <Route path="/patients/:patientId" element={<VistaPaciente />} />
             <Route path="/patients/:patientId/:sessionId" element={<VistaSession />} />

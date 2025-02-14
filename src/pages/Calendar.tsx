@@ -1,8 +1,8 @@
-import { useState } from "react";
-import Breadcrumb from "../components/Breadcrumbs/Breadcrumb";
-
+import { API_LOCAL } from "@/hooks/apis";
+import { useEffect, useState } from "react";
 interface Appointment {
-  id: number;
+  id: string;
+  _id?: string;
   date: string;
   time: string;
   description: string;
@@ -11,22 +11,37 @@ interface Appointment {
   modality: string;
   patientId: string;
   status: string;
+  nombre: string;
+}
+interface Paciente {
+  id: string;
+  _id: string;
+  name: string;
+  age: number;
+  email: string
+  gender: 'Masculino' | 'Femenino' | 'Otro';
+  phone: string
+}
+interface ApiResponse {
+  data: Paciente[];
+}
+interface ApiResponseAppointment {
+  data: Appointment[];
 }
 
-const patients = [
-  { id: "1", name: "Juan Pérez" },
-  { id: "2", name: "María García" },
-  { id: "3", name: "Carlos López" },
-  // Agrega más pacientes aquí
-];
+
 
 const Calendar = () => {
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [patients, setPatients] = useState<Paciente[]>([]);
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState<Appointment>({
-    id: Date.now(),
+    id: "",
     date: "",
+    nombre: "",
     time: "",
     description: "",
     reason: "",
@@ -35,47 +50,209 @@ const Calendar = () => {
     patientId: "", // Almacenamos el ID del paciente
     status: "activo", // Estado por defecto
   });
+  useEffect(() => {
+    const obtenerCitas = async (): Promise<void> => {
+      try {
+        const response = await fetch(`${API_LOCAL}/get-appointments`, {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+          mode: "cors",
+          credentials: 'include'
+        });
+        if (!response.ok) throw new Error('Error al obtener citas');
+        const result: ApiResponseAppointment = await response.json();
+
+        // Verificamos que 'result.data' sea un arreglo de pacientes
+        if (result.data && Array.isArray(result.data)) {
+          setAppointments(result.data); // Asignamos los pacientes al estado
+        } else {
+          throw new Error('Los datos de las citas no están en el formato esperado');
+        }
+      } catch (err) {
+        setError((err as Error).message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    obtenerCitas();
+  }, []); // Se ejecuta solo una vez al montar el componente
+  useEffect(() => {
+    const obtenerPacientes = async (): Promise<void> => {
+      try {
+        const response = await fetch(`${API_LOCAL}/get-patients`, {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+          mode: "cors",
+          credentials: 'include'
+        });
+        if (!response.ok) throw new Error('Error al obtener pacientes');
+        const result: ApiResponse = await response.json();
+
+        // Verificamos que 'result.data' sea un arreglo de pacientes
+        if (result.data && Array.isArray(result.data)) {
+          setPatients(result.data); // Asignamos los pacientes al estado
+        } else {
+          throw new Error('Los datos de pacientes no están en el formato esperado');
+        }
+
+      } catch (err) {
+        setError((err as Error).message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    obtenerPacientes();
+  }, []); // Se ejecuta solo una vez al montar el componente
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [appointmentToDelete, setAppointmentToDelete] = useState<Appointment | null>(null);
+  const [message, setMessage] = useState<string>("");
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
+    const { name, value } = e.target;
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (selectedAppointment) {
-      // Editar cita
-      setAppointments(
-        appointments.map((appt) =>
-          appt.id === selectedAppointment.id ? { ...formData, id: selectedAppointment.id } : appt
-        )
-      );
-      setSelectedAppointment(null);
+    // Si el campo cambiado es el "patientId" (selección del paciente)
+    if (name === "patientId") {
+      const selectedPatient = patients.find(patient => patient._id === value);
+      if (selectedPatient) {
+        setFormData({ ...formData, patientId: selectedPatient._id, nombre: selectedPatient.name });
+      }
     } else {
-      // Agregar nueva cita
-      setAppointments([...appointments, { ...formData, id: Date.now() }]);
+      setFormData({ ...formData, [name]: value });
     }
-    setShowForm(false);
-    setFormData({
-      id: Date.now(),
-      date: "",
-      time: "",
-      description: "",
-      reason: "",
-      duration: "",
-      modality: "",
-      patientId: "",
-      status: "activo",
-    });
   };
 
-  const handleEdit = (appointment: Appointment) => {
+  const handleMessageChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setMessage(e.target.value);
+  };
+
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const method = selectedAppointment ? 'PUT' : 'POST'; // Si hay una cita seleccionada, es edición
+      const endpoint = selectedAppointment ? `${API_LOCAL}/edit-appointment` : `${API_LOCAL}/add-appointment`;
+
+      const response = await fetch(endpoint, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        mode: 'cors',
+        credentials: 'include', // Enviar cookies HTTP-only automáticamente
+        body: JSON.stringify({ formData }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error al ${selectedAppointment ? 'editar' : 'agregar'} la cita`);
+      }
+
+      const data = await response.json();
+
+      if (selectedAppointment) {
+        // 📝 Editar cita en el estado
+    
+        setAppointments((prevAppointments) =>
+          prevAppointments.map((appt) =>
+            appt._id === selectedAppointment._id // Verifica si es la cita seleccionada
+              ? { ...appt, ...formData } // Mantiene datos originales y actualiza solo los editados
+              : appt
+          )
+        );
+        setSelectedAppointment(null);
+        
+      } else {
+        // ➕ Agregar nueva cita al estado
+        setAppointments((prevAppointments) => [...prevAppointments, { ...formData, id: data.id }]);
+      }
+
+      // ✅ Resetear formulario y cerrar modal
+      setShowForm(false);
+      setFormData({
+        id: "",
+        date: "",
+        nombre: "",
+        time: "",
+        description: "",
+        reason: "",
+        duration: "",
+        modality: "",
+        patientId: "", // Almacenamos el ID del paciente
+        status: "activo", // Estado por defecto
+      });
+
+      alert(`Cita ${selectedAppointment ? 'actualizada' : 'agregada'} correctamente`);
+    } catch (error) {
+      console.error("Error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+
+
+  const handleEdit = async (appointment: Appointment) => {
+
     setSelectedAppointment(appointment);
     setFormData(appointment);
     setShowForm(true);
   };
 
-  const handleDelete = (id: number) => {
-    setAppointments(appointments.filter((appt) => appt.id !== id));
+  const handleDeleteClick = (appointment: Appointment) => {
+    setAppointmentToDelete(appointment);
+    const paciente = patients.find(patient => patient.id === appointment.patientId);
+    setMessage(`Estimado paciente,
+
+      Le informamos que su cita con el Dr. ${paciente?.name || "Desconocido"} en la fecha ${appointment.date} a las ${appointment.time} ha sido cancelada.
+      Pronto recibirá un mensaje de su parte para una reprogramación.
+      
+      Saludos.`);
+    setShowDeleteModal(true);
+  };
+
+  const handleDelete = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (appointmentToDelete) {
+      setLoading(true)
+      try {
+        const response = await fetch(`${API_LOCAL}/delete-appointment`, {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          mode: 'cors',
+          credentials: 'include',
+          body: JSON.stringify({ appointmentToDelete })
+        });
+
+        const result: ApiResponseAppointment = await response.json();
+
+        // Verificamos que 'result.data' sea un arreglo de pacientes
+        if (result.data) {
+          setAppointments((prevA) => prevA.filter((appt) => appt._id !== appointmentToDelete._id));
+          setShowDeleteModal(false);
+          setAppointmentToDelete(null);
+          alert("Cita eliminada")
+        } else {
+          throw new Error('Los datos de las citas no están en el formato esperado');
+        }
+      } catch (error) {
+        console.error('Error eliminando el paciente:', error);
+      }
+      finally {
+        setLoading(false)
+        setShowDeleteModal(false);
+        setAppointmentToDelete(null);
+      }
+    }
+
+  };
+
+  const handleCancelDelete = () => {
+    setShowDeleteModal(false);
+    setAppointmentToDelete(null);
   };
 
   return (
@@ -91,7 +268,7 @@ const Calendar = () => {
       </div>
 
       {showForm ? (
-        <div className="max-w-md mx-auto p-4 bg-white shadow-md rounded">
+        <div className="max-w-md mx-auto p-4 bg-white  rounded">
           <h3 className="text-lg font-semibold mb-2">{selectedAppointment ? "Editar Cita" : "Nueva Cita"}</h3>
           <form onSubmit={handleSubmit}>
             <label className="block mb-2">
@@ -104,8 +281,8 @@ const Calendar = () => {
                 required
               >
                 <option value="">Seleccionar paciente</option>
-                {patients.map((patient) => (
-                  <option key={patient.id} value={patient.id}>
+                {patients.map((patient, i) => (
+                  <option key={i} value={patient._id}>
                     {patient.name}
                   </option>
                 ))}
@@ -202,23 +379,52 @@ const Calendar = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {appointments.length > 0 ? (
             appointments.map((appt) => (
-              <div key={appt.id} className="p-4 border rounded shadow bg-white">
+              <div key={appt.id} className="p-4 border rounded  bg-white">
                 <p className="font-semibold">{appt.date} - {appt.time}</p>
                 <p>{appt.description}</p>
-                <p><strong>Paciente:</strong> {patients.find(patient => patient.id === appt.patientId)?.name}</p>
+                <p><strong>Paciente:</strong>{appt.nombre}</p>
+
+
                 <p><strong>Motivo:</strong> {appt.reason}</p>
                 <p><strong>Duración:</strong> {appt.duration} minutos</p>
                 <p><strong>Modalidad:</strong> {appt.modality}</p>
                 <p><strong>Estado:</strong> {appt.status === "activo" ? "Activo" : "Cancelado"}</p>
                 <div className="flex justify-between mt-2">
                   <button className="text-blue-500" onClick={() => handleEdit(appt)}>Editar</button>
-                  <button className="text-red-500" onClick={() => handleDelete(appt.id)}>Eliminar</button>
+                  <button className="text-red-500" onClick={() => handleDeleteClick(appt)}>Eliminar</button>
                 </div>
               </div>
             ))
           ) : (
             <p>No hay citas programadas.</p>
           )}
+        </div>
+      )}
+
+      {/* Modal de confirmación */}
+      {showDeleteModal && appointmentToDelete && (
+        <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded shadow-lg"> {/* Cambié w-96 a w-3/4 */}
+            <h3 className="text-lg font-semibold mb-4">¿Estás seguro de que deseas eliminar esta cita?</h3>
+            <p className="mb-4">Una vez eliminada, no podrás recuperar esta cita y deberas agendarla nuevamente.</p>
+            <p className="mb-4">Enviaremos este mensaje al paciente para que lo sepa de inmediato.</p>
+
+            <textarea
+              value={message}
+              onChange={handleMessageChange}
+              className="w-full p-2 border rounded mb-4"
+              rows={6}
+            />
+
+            <div className="flex justify-end space-x-4">
+              <button onClick={handleCancelDelete} className="bg-gray-300 px-4 py-2 rounded text-gray-700">
+                Cancelar
+              </button>
+              <button onClick={handleDelete} className="bg-red-500 px-4 py-2 rounded text-white">
+                Eliminar
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </>

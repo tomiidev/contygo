@@ -68,8 +68,9 @@ const SignIn: React.FC = () => {
 
       // Redirige al usuario a la página de inicio o dashboard
 
-      navigate('/')
-      /*       window.location.replace("https://contygo.vercel.app") */
+     /*  navigate('/') */
+          window.location.replace("http://localhost:5173") 
+         /*  window.location.replace("https://contygo.vercel.app")  */
       /*  window.location.href = "http://localhost:5173"; */
     } catch (err) {
       setLoading(false);

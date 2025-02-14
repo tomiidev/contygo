@@ -1,15 +1,19 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Resources from './resources';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import ChartOne from '@/components/Charts/ChartOne';
 import { API_LOCAL } from '@/hooks/apis';
+import SharedResources from './shared_resources';
 
 // Tipos de datos
 type Sesion = {
-    fecha: string;
-    descripcion: string;
-    duracion: string;
-    nota: string;
+    _id: string,
+    date: string;
+    description: string;
+    time: string,
+    modality: string,
+    type: string,
+    reason: string
 };
 
 type Material = {
@@ -19,76 +23,81 @@ type Material = {
 };
 
 type Paciente = {
-    nombre: string;
-    edad: number;
+    _id: string;
+    id?: string;
+    name: string;
+    age: number;
+    gender: "masculino" | "femenino";
     email: string;
-    telefono: string;
-    sesiones: Sesion[];
+    phone: string;
+    sessions: Sesion[];
     materialesBrindados: Material[];
     notasAdicionales: string;
 };
 
-const sesionesEjemplo: Sesion[] = Array.from({ length: 50 }, (_, i) => ({
-    fecha: `2025-02-${String(i + 1).padStart(2, '0')}`,
-    descripcion: `Sesión ${i + 1}: Seguimiento clínico`,
-    duracion: '60 minutos',
-    nota: `Notas de la sesión ${i + 1}`
-}));
 
-const pacienteData: Paciente = {
-    nombre: 'Juan Pérez',
-    edad: 30,
-    email: 'juan.perez@mail.com',
-    telefono: '+34 123 456 789',
-    sesiones: sesionesEjemplo,
-    materialesBrindados: [
-        {
-            tipo: 'Folleto',
-            descripcion: 'Estrategias para el manejo de la ansiedad.',
-            fechaEntrega: '2025-01-10'
-        },
-        {
-            tipo: 'Audiolibro',
-            descripcion: 'Mindfulness para principiantes.',
-            fechaEntrega: '2025-01-15'
-        }
-    ],
-    notasAdicionales: 'Paciente tiene una historia familiar con trastornos de ansiedad, lo que requiere un seguimiento cercano.'
-};
+
+interface ApiResponse {
+    data: Paciente[];
+}
 
 const VistaPaciente: React.FC = () => {
+    const { patientId } = useParams<{ patientId: string }>()
+    const [loading, setLoading] = useState<boolean>(true);
+    const [error, setError] = useState<string | null>(null);
     const navigate = useNavigate();
     const [pagina, setPagina] = useState(1);
     const sesionesPorPagina = 5;
-    const totalPaginas = Math.ceil(pacienteData.sesiones.length / sesionesPorPagina);
-
-    const sesionesPaginadas = pacienteData.sesiones.slice(
-        (pagina - 1) * sesionesPorPagina,
-        pagina * sesionesPorPagina
-    );
+    const [patient, setPatient] = useState<Paciente | null>(null);
+    const [editablePaciente, setEditablePaciente] = useState<Paciente | null>(null);
+    const totalPaginas = Math.ceil((patient?.sessions?.length || 1) / sesionesPorPagina);
     const [isLoading, setIsLoading] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
+
+    useEffect(() => {
+        const obtenerPacientes = async (): Promise<void> => {
+            try {
+                const response = await fetch(`${API_LOCAL}/get-patient-byid/${patientId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    mode: 'cors',
+                    credentials: 'include'
+                });
+                if (!response.ok) throw new Error('Error al obtener paciente');
+                const result: ApiResponse = await response.json();
+
+                if (Array.isArray(result.data)) {
+                    setPatient(result.data[0]); // Asigna solo el primer paciente
+
+                } else {
+                    throw new Error('Los datos de las citas no están en el formato esperado');
+                }
+            } catch (err) {
+                setError((err as Error).message);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        obtenerPacientes();
+    }, [patientId]);
 
     const handleGenerarDiagrama = async () => {
         setIsLoading(true);
         try {
-            const response = await fetch(`${API_LOCAL}/generar-diagrama`, { // Aquí va la URL de tu API backend
-                method: 'POST', // O POST si pasas algún dato,
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                credentials: 'include', // Enviar cookies HTTP-only automáticamente
+            const response = await fetch(`${API_LOCAL}/generar-diagrama`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
                 mode: 'cors',
             });
 
             if (response.ok) {
-                // Obtener el archivo generado
                 const blob = await response.blob();
-
-                // Crear un enlace para la descarga
                 const url = window.URL.createObjectURL(blob);
                 const link = document.createElement('a');
                 link.href = url;
-                link.download = 'diagrama.png'; // Nombre del archivo descargado
+                link.download = 'diagrama.png';
                 link.click();
             } else {
                 alert('Hubo un problema al generar el diagrama.');
@@ -101,98 +110,52 @@ const VistaPaciente: React.FC = () => {
         }
     };
 
+    if (loading) return <p>Cargando...</p>;
+    if (error) return <p>Error: {error}</p>;
+    if (!patient) return <p>No hay datos del paciente.</p>;
+
+    const pacienteData = patient;
+    const sesionesPaginadas = pacienteData.sessions?.slice(
+        (pagina - 1) * sesionesPorPagina,
+        pagina * sesionesPorPagina
+    );
+    console.log(sesionesPaginadas)
     return (
-        <div className="bg-white p-6 rounded-lg shadow-lg">
+        <div className="bg-white p-6 rounded-lg border">
             <h1 className="text-2xl font-bold mb-4">Información del paciente</h1>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                <div>
-                    <p><strong>Nombre:</strong> {pacienteData.nombre}</p>
-                    <p><strong>Edad:</strong> {pacienteData.edad}</p>
-                    <p><strong>Email:</strong> {pacienteData.email}</p>
-                    <p><strong>Teléfono:</strong> {pacienteData.telefono}</p>
-                </div>
-                <div className="flex justify-end items-start">
-                    <button
-                        className="px-4 py-2 bg-purple-500 text-white rounded flex items-center"
-                        onClick={handleGenerarDiagrama}
-                        disabled={isLoading}
-                    >
-                        {isLoading ? (
-                            <>
-                                {/* Spinner con CSS */}
-                                <div className="spinner-border animate-spin w-4 h-4 mr-2 border-t-2 border-white rounded-full"></div>
-                                Generando...
-                            </>
-                        ) : (
-                            'Generar diagrama'
-                        )}
-                    </button>
-
-                </div>
-            </div>
-
-
-            {/* Lista de Sesiones con paginación */}
+            <p>Nombre: <strong>{pacienteData.name}</strong></p>
+            <p>Edad:  <strong>{pacienteData.age}</strong></p>
+            <p>Teléfono:  <strong>{pacienteData.phone}</strong></p>
+            <p>Email:  <strong>{pacienteData.email}</strong></p>
+            <p>Genero:  <strong>{pacienteData.gender}</strong></p>
             <div className="mb-6">
                 <h2 className="text-xl font-semibold mb-3">Sesiones</h2>
                 <table className="w-full border-collapse border border-gray-200">
                     <thead>
                         <tr className="bg-gray-100">
                             <th className="border p-2">Fecha</th>
-                            <th className="border p-2">Descripción</th>
+                            <th className="border p-2">Razón</th>
                             <th className="border p-2">Duración</th>
-                            <th className="border p-2">Nota</th>
+                            <th className="border p-2">Modo</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {sesionesPaginadas.map((sesion, index) => {
-                            const globalIndex = (pagina - 1) * sesionesPorPagina + index; // Índice real en el array original
+                        {sesionesPaginadas?.map((sesion, index) => (
+                            <tr key={index} className="border" onClick={() => navigate(`/patients/${patientId}/${sesion._id}`)}>
+                                <td className="border p-2">{sesion.date}</td>
+                                <td className="border p-2">{sesion.reason}</td>
+                                <td className="border p-2">{sesion.time}</td>
 
-                            return (
-                                <tr key={globalIndex} className="border">
-                                    <td className="border p-2">{sesion.fecha}</td>
-                                    <td className="border p-2">{sesion.descripcion}</td>
-                                    <td className="border p-2">{sesion.duracion}</td>
-                                    <td className="border p-2">{sesion.nota}</td>
-                                    <td className="border p-2">
-                                        <button
-                                            className="px-3 py-1 bg-blue-500 text-white rounded"
-                                            onClick={() => navigate(`/patients/${pacienteData.nombre}/${globalIndex}`)}
-                                        >
-                                            Ver Detalles
-                                        </button>
-                                    </td>
-                                </tr>
-                            );
-                        })}
-
+                                <td className="border p-2">{sesion.modality}</td>
+                            </tr>
+                        ))}
                     </tbody>
                 </table>
-                <div className="flex justify-center mt-4">
-                    <button
-                        className="px-4 py-2 bg-gray-200 rounded mr-2 disabled:opacity-50"
-                        onClick={() => setPagina(pagina - 1)}
-                        disabled={pagina === 1}
-                    >
-                        Anterior
-                    </button>
-                    <span className="px-4 py-2">Página {pagina} de {totalPaginas}</span>
-                    <button
-                        className="px-4 py-2 bg-gray-200 rounded ml-2 disabled:opacity-50"
-                        onClick={() => setPagina(pagina + 1)}
-                        disabled={pagina === totalPaginas}
-                    >
-                        Siguiente
-                    </button>
-                </div>
             </div>
-            <div className="my-10">
-                <ChartOne />
-            </div>
-            {/* Lista de Materiales Brindados */}
+            <ChartOne />
             <div className="mb-6">
                 <h2 className="text-xl font-semibold mb-3">Materiales brindados</h2>
-                <Resources />
+                <SharedResources patient={patient} />
             </div>
         </div>
     );
