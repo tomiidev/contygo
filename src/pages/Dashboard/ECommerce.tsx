@@ -4,6 +4,7 @@ import CardDataStats from '../../components/CardDataStats';
 import ChartTwo from '../../components/Charts/ChartTwo';
 
 import { API_LOCAL } from '@/hooks/apis';
+import RegisterPayment from '@/hooks/complete_payment';
 interface Appointment {
   id: string;
   date: string;
@@ -135,6 +136,7 @@ const ECommerce: React.FC = () => {
   }, []); // Se ejecuta solo una vez al montar el componente
   return (
     <>
+    <RegisterPayment />
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-4 2xl:gap-7.5">
         <CardDataStats title="Consultas totales" total={`${appointments.length}`} rate="0.43%" levelUp >
           <svg

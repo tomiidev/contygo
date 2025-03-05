@@ -5,14 +5,14 @@ const ImagenSvg: React.FC = () => {
     return (
         <div className="hidden w-full xl:block xl:w-1/2">
             <div className="py-17.5 px-26 text-center">
-                <Link className="mb-5.5 inline-block" to="/">
+               {/*  <Link className="mb-5.5 inline-block" to="/">
                     <img className="hidden dark:block" src={Logo} alt="Logo" />
                     <img className="dark:hidden" src={LogoDark} alt="Logo" />
                 </Link>
                 <p className="2xl:px-20">
                     Lorem ipsum dolor sit amet, consectetur adipiscing elit
                     suspendisse.
-                </p>
+                </p> */}
 
                 <span className="mt-15 inline-block">
                     <svg
