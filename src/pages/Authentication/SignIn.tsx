@@ -45,7 +45,7 @@ const SignIn: React.FC = () => {
     setError('');
 
     try {
-      const response = await fetch(`${API_LOCAL}/sign_in_with_email`, {
+      const response = await fetch(`${API_URL}/sign_in_with_email`, {
         method: 'POST',
         mode: "cors",
         credentials: 'include', // Enviar cookies HTTP-only automáticamente
