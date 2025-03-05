@@ -13,13 +13,15 @@ type User = {
   description: string,
   especiality: string,
   modality: string,
+  therapyTypes: string[];
 };
 
 
 const Settings = () => {
-      const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    const [loading, setLoading] = useState(false);
   useEffect(() => {
 
 
@@ -47,6 +49,7 @@ const Settings = () => {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      setErrorMessage(null); // Clear error if valid
       const img = new Image();
       const reader = new FileReader();
 
@@ -69,7 +72,7 @@ const Settings = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
+    setLoading(true);
     const form = e.target as HTMLFormElement; // Cast to HTMLFormElement
     const fileInput = form.elements.namedItem('image') as HTMLInputElement;
     const file = fileInput.files?.[0];
@@ -101,6 +104,9 @@ const Settings = () => {
       console.error(error);
       alert('Error al subir la imagen');
     }
+    finally{
+      setLoading(false);
+    }
   };
 
   return (
@@ -108,7 +114,7 @@ const Settings = () => {
       <Breadcrumb pageName="Información personal" number={0} />
 
       <div className="grid gap-8">
-        <UserProfileEditForm user={user}/>
+        <UserProfileEditForm user={user} />
         <div className="col-span-5">
           <div className="rounded-sm border border-stroke bg-white dark:border-strokedark dark:bg-boxdark">
             <div className="border-b border-stroke py-4 px-7 dark:border-strokedark">
@@ -126,7 +132,7 @@ const Settings = () => {
                       />
                     ) : (
 
-                      <img src={`https://contygo.s3.us-east-2.amazonaws.com/${user && user._id}/foto/${user&& user.photo}`} alt="User" className="w-full h-full object-cover border border-1 border-black rounded-full" />
+                      <img src={`https://contygo.s3.us-east-2.amazonaws.com/${user && user._id}/foto/${user && user.photo}`} alt="User" className="w-full h-full object-cover border border-1 border-black rounded-full" />
                     )}
                   </div>
 
@@ -186,12 +192,13 @@ const Settings = () => {
                 </div>
 
                 <div className="flex justify-end gap-4.5">
-                {/*  */}
+                  {/*  */}
                   <button
-                    className="flex justify-center rounded bg-primary py-2 px-6 font-medium text-gray hover:bg-opacity-90"
+                    className="bg-primary text-white py-2 px-6 rounded hover:bg-opacity-90"
                     type="submit"
+                    disabled={loading}
                   >
-                    Guardar
+                    {loading ? "Guardando..." : "Guardar"}
                   </button>
                 </div>
               </form>

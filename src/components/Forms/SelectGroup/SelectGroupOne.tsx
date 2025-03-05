@@ -1,43 +1,43 @@
 import React, { useState } from 'react';
+interface Paciente {
+  id: string;
+  _id: string;
+  name: string;
+  age: number;
+  email: string
+  gender: 'masculino' | 'femenino';
+  phone: string;
+  message: string;
+}
+interface SharedResourcesProps {
+  patients: Paciente[];
+  selectedPatient: Paciente | null;
+  setSelectedPatient: (patient: Paciente | null) => void; // Permitir null
+  handleChangeSend: (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
+}
 
-const SelectGroupOne: React.FC = () => {
-  const [selectedOption, setSelectedOption] = useState<string>('');
-  const [isOptionSelected, setIsOptionSelected] = useState<boolean>(false);
-
-  const changeTextColor = () => {
-    setIsOptionSelected(true);
-  };
-
+const SelectGroupOne: React.FC<SharedResourcesProps> = ({ patients, handleChangeSend }) => {
   return (
     <div className="mb-4.5">
       <label className="mb-2.5 block text-black dark:text-white">
-        {' '}
-        Subject{' '}
+
+        Nombre
       </label>
 
       <div className="relative z-20 bg-transparent dark:bg-form-input">
         <select
-          value={selectedOption}
-          onChange={(e) => {
-            setSelectedOption(e.target.value);
-            changeTextColor();
-          }}
-          className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-3 px-5 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary ${
-            isOptionSelected ? 'text-black dark:text-white' : ''
-          }`}
+
+          name='patient'
+          onChange={handleChangeSend}
+          className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-3 px-5 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary`}
         >
-          <option value="" disabled className="text-body dark:text-bodydark">
-            Select your subject
-          </option>
-          <option value="USA" className="text-body dark:text-bodydark">
-            USA
-          </option>
-          <option value="UK" className="text-body dark:text-bodydark">
-            UK
-          </option>
-          <option value="Canada" className="text-body dark:text-bodydark">
-            Canada
-          </option>
+          <option value="">Seleccione un paciente</option>
+          {patients && patients.length > 0 && patients.map((patient) => (
+            <option value={patient._id} key={patient._id} className={`p-2 rounded cursor-pointer`}>
+
+              {patient.name}
+            </option>
+          ))}
         </select>
 
         <span className="absolute top-1/2 right-4 z-30 -translate-y-1/2">
@@ -60,7 +60,7 @@ const SelectGroupOne: React.FC = () => {
           </svg>
         </span>
       </div>
-    </div>
+    </div >
   );
 };
 

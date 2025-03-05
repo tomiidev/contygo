@@ -11,7 +11,7 @@ const Breadcrumb = ({ pageName, number }: BreadcrumbProps) => {
         <h2 className="text-title-md2 font-semibold text-black dark:text-white">
           {pageName}
         </h2>
-        <span className='text-xl'><strong>({number})</strong></span>
+        <span className='text-xl'><strong>{number === 0 ? "" : `(${number})`}</strong></span>
       </div>
       <nav>
         <ol className="flex items-center gap-2">

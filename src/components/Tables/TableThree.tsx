@@ -1,6 +1,7 @@
 import { API_LOCAL } from '@/hooks/apis';
 import { FC, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Breadcrumb from '../Breadcrumbs/Breadcrumb';
 
 // Interfaz para el paciente
 interface Paciente {
@@ -216,6 +217,7 @@ const ListaPacientes: FC = () => {
 
   return (
     <div>
+       <Breadcrumb pageName="Pacientes" number={pacientes.length}/>
       <div className="flex justify-end mb-4">
         {/*    <h2 className="text-lg font-semibold">Calendario de citas</h2> */}
         <button

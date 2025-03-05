@@ -229,11 +229,11 @@ const ECommerce: React.FC = () => {
           </svg>
         </CardDataStats>
       </div>
-
+{/* 
       <div className="mt-4 grid  gap-4 md:mt-6 md:gap-6 2xl:mt-7.5 2xl:gap-7.5">
 
         <ChartTwo />
-      </div>
+      </div> */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 my-5">
         {/* Renderizamos dinámicamente las funcionalidades */}
         {functionalities.map((func, index) => (

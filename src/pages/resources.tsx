@@ -2,6 +2,7 @@ import Loader from "@/common/Loader";
 import { API_LOCAL } from "@/hooks/apis";
 import { useEffect, useState } from "react";
 import { BsDownload, BsShare } from "react-icons/bs";
+import FormLayout from "./Form/FormLayout";
 
 const fileTypes = ["PDF", "Video", "Excel", "Imagen", "Documento"];
 
@@ -31,11 +32,28 @@ interface Paciente {
   phone: string;
   message: string;
 }
+interface Send {
+  _id: string;
+  subject: string;
+  message: string;
+  email: string;
+  name: string;
+}
 
 const Resources = () => {
   const [resources, setResources] = useState<Resource[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [selectedPatient, setSelectedPatient] = useState<Paciente | null>(null);
+  const [patients, setPatients] = useState<Paciente[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [send, setSend] = useState<Send>({
+    subject: "",
+    message: "",
+    name: "",
+    email: "",
+    _id: ""
+  });
+
   const formatMongoDate = (mongoDate: string): string => {
     const date = new Date(mongoDate);
     const day = date.getDate().toString().padStart(2, "0"); // Agrega un "0" si es necesario
@@ -43,9 +61,7 @@ const Resources = () => {
     const year = date.getFullYear();
     return `${day}-${month}-${year}`;
   };
-  const [patients, setPatients] = useState<Paciente[]>([]);
 
-  const [selectedPatient, setSelectedPatient] = useState<Paciente | null>(null);
   useEffect(() => {
     const obtenerPacientes = async (): Promise<void> => {
       try {
@@ -76,7 +92,7 @@ const Resources = () => {
   }, []); // Se ejecuta solo una vez al montar el componente
   const [shareModalOpen, setShareModalOpen] = useState<boolean>(false);
   const [selectedResource, setSelectedResource] = useState<Resource | null>(null);
-  const [isSharing, setIsSharing] = useState(false); // Estado para manejar la carga
+  const [isSharing, setIsSharing] = useState<boolean>(false) // Estado para manejar la carga
 
   const handleShareClick = (resource: Resource) => {
     setSelectedResource(resource);
@@ -137,6 +153,32 @@ const Resources = () => {
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>) => {
     setNewResource((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
+  const handleChangeSend = (e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+
+    // Si el cambio proviene del select de pacientes
+    if (name === "patient") {
+      const selected = patients.find((p) => p._id === value);
+      if (selected) {
+        setSelectedPatient(selected);
+        setSend((prev) => ({
+          ...prev,
+          name: selected.name,
+          email: selected.email,
+          _id: selected._id,
+        }));
+      }
+    } else {
+      // Si el cambio es en otro input (subject, message)
+      setSend((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
+  };
+
+
+
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -210,14 +252,14 @@ const Resources = () => {
     e.preventDefault();
 
     // Verificamos que ambos estén seleccionados
-    if (!selectedPatient || !selectedResource) {
-      console.error("Paciente o recurso no seleccionado");
+    if (send.email === "" || send.message === "" || send.subject === "" || !selectedResource) {
+      alert("Paciente o recurso no seleccionado");
       return;
     }
     setIsSharing(true); // Inicia la carga
     // Llamamos a la función para compartir el recurso con el paciente
     try {
-      await handleShare(selectedPatient, selectedResource); // Llama a la función que maneja la compartición
+      await handleShare(send, selectedResource); // Llama a la función que maneja la compartición
       setSelectedPatient(null)
     } catch (error) {
       console.error("Error al compartir recurso", error);
@@ -227,12 +269,14 @@ const Resources = () => {
     handleCloseShareModal(); // Cerramos el modal
   };
 
-  const handleShare = async (patient: Paciente, resource: Resource): Promise<void> => {
+  const handleShare = async (/* patient: Paciente */send: Send, resource: Resource): Promise<void> => {
+    console.log(send)
+    
     try {
       const response = await fetch(`${API_LOCAL}/share-resource`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ patient, resource }), // Solo enviamos los IDs
+        body: JSON.stringify({ send, resource }), // Solo enviamos los IDs
         mode: "cors",
         credentials: "include", // Si necesitas enviar cookies
       });
@@ -243,7 +287,7 @@ const Resources = () => {
 
       const result: ApiResponse = await response.json();
 
-    
+
       if (result.data && Array.isArray(result.data)) {
       } else {
         throw new Error("Los datos recibidos no tienen el formato esperado");
@@ -319,8 +363,9 @@ const Resources = () => {
 
       {open && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+
           <div className="bg-white p-6 rounded-lg shadow-lg w-96">
-            <h3 className="text-lg font-semibold mb-4">Agregar Nuevo Recurso</h3>
+            <h3 className="text-lg font-semibold mb-4">Agregar nuevo recurso</h3>
 
             <label className="block mb-2">Tipo de archivo:</label>
             <select name="type" value={newResource.type} onChange={handleChange} className="w-full p-2 mb-3 border border-gray-300 rounded-lg">
@@ -347,8 +392,9 @@ const Resources = () => {
         </div>
       )}
       {shareModalOpen && selectedResource && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 w-full">
+          <FormLayout isSharing={isSharing} handleChangeSend={handleChangeSend} handleCloseShareModal={handleCloseShareModal} patients={patients} selectedPatient={selectedPatient} handleShareResource={handleShareResource} setSelectedPatient={setSelectedPatient} />
+          {/*  <div className="bg-white p-6 rounded-lg shadow-lg w-96">
             <h3 className="text-lg font-semibold mb-4">Compartir "{selectedResource.name}"</h3>
 
             {patients.length === 0 ? (
@@ -385,7 +431,7 @@ const Resources = () => {
 
 
             </div>
-          </div>
+          </div> */}
         </div>
       )
       }

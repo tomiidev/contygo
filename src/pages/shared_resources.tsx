@@ -28,9 +28,9 @@ interface Resource {
 interface Paciente {
     _id: string;
     id?: string;
-    nombre: string;
-    edad: number;
-    genero: string;
+    name: string;
+    age: number;
+    gender: string;
     email: string;
     phone: string;
     sessions: Sesion[];

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import ClickOutside from '../ClickOutside';
 /* import UserOne from '../../images/user/user-01.png'; */
-import { API_LOCAL, API_URL } from "@/hooks/apis";
+import { API_LOCAL } from "@/hooks/apis";
 import axios from 'axios';
 interface User {
   id: string;
@@ -19,7 +19,7 @@ const DropdownUser = () => {
 
     const checkAuth = async () => {
       try {
-        const response = await axios.get(`${API_URL}/check-auth`, { withCredentials: true });
+        const response = await axios.get(`${API_LOCAL}/check-auth`, { withCredentials: true });
 
         if (response.status === 200) {
           console.log(response)

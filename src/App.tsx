@@ -23,6 +23,8 @@ import AuthLayout from './layout/auth'; // Layout para autenticación
 import { API_LOCAL, API_URL } from './hooks/apis';
 import ListaEspera from './pages/wait_list';
 import PsychologistProfile from './pages/landing/landing';
+import Billing from './pages/billing';
+import VistaSesion from './pages/patient_id';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -41,7 +43,39 @@ function App() {
 
   const checkedAuth = useRef(false);
 
-/*   useEffect(() => {
+  /*   useEffect(() => {
+      if (checkedAuth.current) return; // Evita múltiples llamadas
+      checkedAuth.current = true;
+  
+      const checkAuth = async () => {
+        try {
+          const response = await fetch(`${API_LOCAL}/check-auth`, {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' },
+            mode: "cors",
+            credentials: 'include',
+          });
+  
+          if (response.ok) {
+            setIsAuthenticated(true);
+          } else {
+            setIsAuthenticated(false);
+  
+            // Si el usuario ya está en una página de autenticación, no lo redirijas
+            if (!pathname.startsWith('/auth')) {
+              navigate('/auth/signin', { replace: true });
+            }
+          }
+        } catch (error) {
+          console.error("Error verificando autenticación:", error);
+          setIsAuthenticated(false);
+        }
+      };
+  
+      checkAuth();
+    }, [navigate, pathname]);
+   */
+  useEffect(() => {
     if (checkedAuth.current) return; // Evita múltiples llamadas
     checkedAuth.current = true;
 
@@ -54,45 +88,13 @@ function App() {
           credentials: 'include',
         });
 
-        if (response.ok) {
-          setIsAuthenticated(true);
-        } else {
-          setIsAuthenticated(false);
-
-          // Si el usuario ya está en una página de autenticación, no lo redirijas
-          if (!pathname.startsWith('/auth')) {
-            navigate('/auth/signin', { replace: true });
-          }
-        }
-      } catch (error) {
-        console.error("Error verificando autenticación:", error);
-        setIsAuthenticated(false);
-      }
-    };
-
-    checkAuth();
-  }, [navigate, pathname]);
- */
-  useEffect(() => {
-    if (checkedAuth.current) return; // Evita múltiples llamadas
-    checkedAuth.current = true;
-  
-    const checkAuth = async () => {
-      try {
-        const response = await fetch(`${API_URL}/check-auth`, {
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' },
-          mode: "cors",
-          credentials: 'include',
-        });
-  
         const data = await response.json(); // Verifica la respuesta correctamente
-  
-        if (response.ok && data.authenticated) { // Validar que el usuario esté autenticado
+
+        if (response.ok && data.authenticated && data.freePlan ===true) { // Validar que el usuario esté autenticado
           setIsAuthenticated(true);
         } else {
           setIsAuthenticated(false);
-  
+
           // Excluir rutas públicas de la redirección
           const isPublicRoute = pathname.startsWith('/p') || pathname.startsWith('/auth');
           if (!isPublicRoute) {
@@ -104,10 +106,10 @@ function App() {
         setIsAuthenticated(false);
       }
     };
-  
+
     checkAuth();
   }, [navigate, pathname]);
-  
+
   // Lógica de renderizado condicional
   if (loading) {
     return <Loader />; // Muestra un Loader mientras carga la página
@@ -163,7 +165,7 @@ function App() {
               index
               element={
                 <>
-                  <PageTitle title="eCommerce Dashboard | TailAdmin - Tailwind CSS Admin Dashboard Template" />
+                  <PageTitle title="Contygo | Inicio" />
                   <ECommerce />
                 </>
               }
@@ -172,7 +174,7 @@ function App() {
               path="/calendar"
               element={
                 <>
-                  <PageTitle title="Calendar | TailAdmin - Tailwind CSS Admin Dashboard Template" />
+                  <PageTitle title="Contygo | Consultas" />
                   <Calendar />
                 </>
               }
@@ -181,8 +183,17 @@ function App() {
               path="/resources"
               element={
                 <>
-                  <PageTitle title="Recursos | TailAdmin - Tailwind CSS Admin Dashboard Template" />
+                  <PageTitle title="Contygo | Recursos" />
                   <Resources />
+                </>
+              }
+            />
+            <Route
+              path="/billing"
+              element={
+                <>
+                  <PageTitle title="Contygo | Pagos" />
+                  <Billing />
                 </>
               }
             />
@@ -204,7 +215,7 @@ function App() {
                 </>
               }
             />
-            <Route
+         {/*    <Route
               path="/forms/form-layout"
               element={
                 <>
@@ -212,16 +223,28 @@ function App() {
                   <FormLayout />
                 </>
               }
-            />
-            <Route path="/waitlist" element={<ListaEspera />} />
-            <Route path="/patients" element={<Tables />} />
-            <Route path="/patients/:patientId" element={<VistaPaciente />} />
-            <Route path="/patients/:patientId/:sessionId" element={<VistaSession />} />
+            /> */}
+            <Route path="/waitlist" element={<>
+              <PageTitle title="Contygo | Lista de espera" />
+              <ListaEspera />
+            </>} />
+            <Route path="/patients" element={<>
+              <PageTitle title="Contygo | Pacientes" />
+              <Tables />
+            </>} />
+            <Route path="/patients/:patientId" element={<>
+              <PageTitle title="Contygo | Detalle del paciente" />
+              <VistaPaciente />
+            </>} />
+            <Route path="/patients/:patientId/:sessionId" element={<>
+              <PageTitle title="Contygo | Detalle de la sesión" />
+              <VistaSesion />
+            </>} />
             <Route
               path="/settings"
               element={
                 <>
-                  <PageTitle title="Settings | TailAdmin - Tailwind CSS Admin Dashboard Template" />
+                  <PageTitle title="Contygo | Configuración" />
                   <Settings />
                 </>
               }

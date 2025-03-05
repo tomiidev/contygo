@@ -1,4 +1,5 @@
 import { API_LOCAL } from "@/hooks/apis";
+import { formatDateToDMY } from "@/hooks/dates";
 import { useEffect, useState } from "react";
 interface Appointment {
   id: string;
@@ -143,7 +144,7 @@ const Calendar = () => {
         },
         mode: 'cors',
         credentials: 'include', // Enviar cookies HTTP-only automáticamente
-        body: JSON.stringify({ formData }),
+        body: JSON.stringify({ formData: formData }),
       });
 
       if (!response.ok) {
@@ -154,7 +155,7 @@ const Calendar = () => {
 
       if (selectedAppointment) {
         // 📝 Editar cita en el estado
-    
+
         setAppointments((prevAppointments) =>
           prevAppointments.map((appt) =>
             appt._id === selectedAppointment._id // Verifica si es la cita seleccionada
@@ -163,7 +164,7 @@ const Calendar = () => {
           )
         );
         setSelectedAppointment(null);
-        
+
       } else {
         // ➕ Agregar nueva cita al estado
         setAppointments((prevAppointments) => [...prevAppointments, { ...formData, id: data.id }]);
@@ -268,13 +269,14 @@ const Calendar = () => {
       </div>
 
       {showForm ? (
-        <div className="max-w-md mx-auto p-4 bg-white  rounded">
-          <h3 className="text-lg font-semibold mb-2">{selectedAppointment ? "Editar Cita" : "Nueva Cita"}</h3>
+        <div className=" mx-auto p-4 bg-white  rounded">
+          <h3 className="text-lg font-semibold mb-2">{selectedAppointment ? "Editar cita" : "Nueva cita"}</h3>
           <form onSubmit={handleSubmit}>
             <label className="block mb-2">
               Nombre del paciente:
               <select
                 name="patientId"
+                 autoComplete="off"
                 value={formData.patientId}
                 onChange={handleChange}
                 className="w-full p-2 border rounded"
@@ -295,6 +297,7 @@ const Calendar = () => {
                 type="date"
                 name="date"
                 value={formData.date}
+                 autoComplete="off"
                 onChange={handleChange}
                 className="w-full p-2 border rounded"
                 required
@@ -305,13 +308,14 @@ const Calendar = () => {
               <input
                 type="time"
                 name="time"
+                 autoComplete="off"
                 value={formData.time}
                 onChange={handleChange}
                 className="w-full p-2 border rounded"
                 required
               />
             </label>
-            <label className="block mb-2">
+            {/*  <label className="block mb-2">
               Descripción:
               <textarea
                 name="description"
@@ -320,12 +324,13 @@ const Calendar = () => {
                 className="w-full p-2 border rounded"
                 required
               />
-            </label>
+            </label> */}
             <label className="block mb-2">
               Motivo de la sesión:
               <input
                 type="text"
                 name="reason"
+                autoComplete="off"
                 value={formData.reason}
                 onChange={handleChange}
                 className="w-full p-2 border rounded"
@@ -337,6 +342,7 @@ const Calendar = () => {
               <input
                 type="number"
                 name="duration"
+                 autoComplete="off"
                 value={formData.duration}
                 onChange={handleChange}
                 className="w-full p-2 border rounded"
@@ -346,6 +352,7 @@ const Calendar = () => {
             <label className="block mb-2">
               Modalidad:
               <select
+               autoComplete="off"
                 name="modality"
                 value={formData.modality}
                 onChange={handleChange}
@@ -362,42 +369,57 @@ const Calendar = () => {
               <select
                 name="status"
                 value={formData.status}
+                 autoComplete="off"
                 onChange={handleChange}
                 className="w-full p-2 border rounded"
                 required
               >
                 <option value="activo">Activo</option>
                 <option value="cancelado">Cancelado</option>
+                <option value="terminada">Terminada</option>
               </select>
             </label>
-            <button type="submit" className="bg-green-500 text-white px-4 py-2 rounded w-full">
-              {selectedAppointment ? "Actualizar" : "Guardar"}
-            </button>
+            <div className="flex justify-between gap-10">
+
+              <button onClick={() => setShowForm(!showForm)} className="w-full bg-gray-300 px-4 py-2 rounded text-gray-700">
+                Cancelar
+              </button>
+              <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded w-full">
+                {selectedAppointment ? "Actualizar" : "Guardar"}
+              </button>
+            </div>
           </form>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {appointments.length > 0 ? (
-            appointments.map((appt) => (
-              <div key={appt.id} className="p-4 border rounded  bg-white">
-                <p className="font-semibold">{appt.date} - {appt.time}</p>
-                <p>{appt.description}</p>
-                <p><strong>Paciente:</strong>{appt.nombre}</p>
-
-
-                <p><strong>Motivo:</strong> {appt.reason}</p>
-                <p><strong>Duración:</strong> {appt.duration} minutos</p>
-                <p><strong>Modalidad:</strong> {appt.modality}</p>
-                <p><strong>Estado:</strong> {appt.status === "activo" ? "Activo" : "Cancelado"}</p>
-                <div className="flex justify-between mt-2">
-                  <button className="text-blue-500" onClick={() => handleEdit(appt)}>Editar</button>
-                  <button className="text-red-500" onClick={() => handleDeleteClick(appt)}>Eliminar</button>
+            appointments
+              .filter((s) => s.status !== "terminada")
+              .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()) // Ordenar por fecha descendente
+              .map((appt) => (
+                <div key={appt.id} className="p-4 border rounded bg-white">
+                  <p className="font-semibold text-right">Fecha: {formatDateToDMY(appt.date)} - Hora: {appt.time}</p>
+                  <hr/>
+                  <p><strong>Paciente:</strong> {appt.nombre}</p>
+                  <hr/>
+                  <p><strong>Motivo:</strong> {appt.reason}</p>
+                  <hr/>
+                  <p><strong>Duración:</strong> {appt.duration} minutos</p>
+                  <hr/>
+                  <p><strong>Modalidad:</strong> {appt.modality}</p>
+                  <hr/>
+                  <p><strong>Estado:</strong> {appt.status === "activo" ? "Activo" : "Cancelado"}</p>
+                  <hr/>
+                  <div className="flex justify-between mt-2">
+                    <button className="text-blue-500" onClick={() => handleEdit(appt)}>Editar</button>
+                    <button className="text-red-500" onClick={() => handleDeleteClick(appt)}>Eliminar</button>
+                  </div>
                 </div>
-              </div>
-            ))
+              ))
           ) : (
             <p>No hay citas programadas.</p>
           )}
+
         </div>
       )}
 
