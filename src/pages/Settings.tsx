@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Breadcrumb from '../components/Breadcrumbs/Breadcrumb';
 import UserProfileEditForm from './Form/data';
-import { API_LOCAL } from '@/hooks/apis';
+import { API_LOCAL, API_URL } from '@/hooks/apis';
 import axios from 'axios';
 type User = {
   _id: string;
@@ -27,7 +27,7 @@ const Settings = () => {
 
     const getDataInformation = async () => {
       try {
-        const response = await axios.get(`${API_LOCAL}/get-user-data`, { withCredentials: true });
+        const response = await axios.get(`${API_URL}/get-user-data`, { withCredentials: true });
 
         if (response.status === 200) {
           const userData = response.data.data;

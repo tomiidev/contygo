@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Resources from './resources';
 import { useNavigate, useParams } from 'react-router-dom';
 import ChartOne from '@/components/Charts/ChartOne';
-import { API_LOCAL } from '@/hooks/apis';
+import { API_LOCAL, API_URL } from '@/hooks/apis';
 import SharedResources from './shared_resources';
 import { BsPencil, BsTrash, BsTrash2 } from 'react-icons/bs';
 import Farm from '@/components/farm';
@@ -79,7 +79,7 @@ const VistaPaciente: React.FC = () => {
     useEffect(() => {
         const obtenerPacientes = async (): Promise<void> => {
             try {
-                const response = await fetch(`${API_LOCAL}/get-patient-byid/${patientId}`, {
+                const response = await fetch(`${API_URL}/get-patient-byid/${patientId}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     mode: 'cors',

@@ -1,5 +1,5 @@
 import Loader from "@/common/Loader";
-import { API_LOCAL } from "@/hooks/apis";
+import { API_LOCAL, API_URL } from "@/hooks/apis";
 import { useEffect, useState } from "react";
 import { BsDownload, BsShare } from "react-icons/bs";
 import FormLayout from "./Form/FormLayout";
@@ -65,7 +65,7 @@ const Resources = () => {
   useEffect(() => {
     const obtenerPacientes = async (): Promise<void> => {
       try {
-        const response = await fetch(`${API_LOCAL}/get-patients`, {
+        const response = await fetch(`${API_URL}/get-patients`, {
           method: 'GET',
           headers: { 'Content-Type': 'application/json' },
           mode: "cors",
@@ -107,7 +107,7 @@ const Resources = () => {
   useEffect(() => {
     const obtenerRecursos = async (): Promise<void> => {
       try {
-        const response = await fetch(`${API_LOCAL}/get-resources`, {
+        const response = await fetch(`${API_URL}/get-resources`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           mode: "cors",
@@ -223,7 +223,7 @@ const Resources = () => {
       formData.append("file", file);
       formData.append("type", type);
 
-      const response = await fetch(`${API_LOCAL}/upload-resource`, {
+      const response = await fetch(`${API_URL}/upload-resource`, {
         method: "POST",
         body: formData,
         mode: "cors",
@@ -273,7 +273,7 @@ const Resources = () => {
     console.log(send)
     
     try {
-      const response = await fetch(`${API_LOCAL}/share-resource`, {
+      const response = await fetch(`${API_URL}/share-resource`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ send, resource }), // Solo enviamos los IDs
