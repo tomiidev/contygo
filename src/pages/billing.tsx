@@ -1,5 +1,5 @@
 import Loader from "@/common/Loader";
-import { API_LOCAL } from "@/hooks/apis";
+import { API_LOCAL, API_URL } from "@/hooks/apis";
 import { faCopy } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useEffect, useState } from "react";
@@ -70,7 +70,7 @@ const Billing = () => {
   useEffect(() => {
     const obtenerPacientes = async (): Promise<void> => {
       try {
-        const response = await fetch(`${API_LOCAL}/get-payments`, {
+        const response = await fetch(`${API_URL}/get-payments`, {
           method: 'GET',
           headers: { 'Content-Type': 'application/json' },
           mode: "cors",
@@ -98,7 +98,7 @@ const Billing = () => {
   useEffect(() => {
     const obtenerPacientes = async (): Promise<void> => {
       try {
-        const response = await fetch(`${API_LOCAL}/get-patients`, {
+        const response = await fetch(`${API_URL}/get-patients`, {
           method: 'GET',
           headers: { 'Content-Type': 'application/json' },
           mode: "cors",
@@ -140,7 +140,7 @@ const Billing = () => {
   useEffect(() => {
     const obtenerRecursos = async (): Promise<void> => {
       try {
-        const response = await fetch(`${API_LOCAL}/get-payments`, {
+        const response = await fetch(`${API_URL}/get-payments`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           mode: "cors",
@@ -232,7 +232,7 @@ const Billing = () => {
       };
 
       console.log(payment)
-      const response = await fetch(`${API_LOCAL}/upload-payment`, {
+      const response = await fetch(`${API_URL}/upload-payment`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ formData: formData }),
