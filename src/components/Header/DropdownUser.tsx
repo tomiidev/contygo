@@ -46,7 +46,7 @@ const DropdownUser = () => {
       if (response.status === 200) {
         /* redirigir al inicio de sesión de keplan */
         setUser(null);
-        window.location.href = "https://www.opawork.app/auth/signin";
+        window.location.replace("https://www.contygoo.com") 
         /* window.location.href = "http://localhost:5173/auth/signin"; */
         /*  window.location.href = "https://signin.unabuenauy.com"; */
       }
