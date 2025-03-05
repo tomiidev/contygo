@@ -81,7 +81,7 @@ function App() {
 
     const checkAuth = async () => {
       try {
-        const response = await fetch(`${API_LOCAL}/check-auth`, {
+        const response = await fetch(`${API_URL}/check-auth`, {
           method: 'GET',
           headers: { 'Content-Type': 'application/json' },
           mode: "cors",
