@@ -6,11 +6,18 @@ import { useEffect, useState } from "react";
 import { BsDownload, BsShare } from "react-icons/bs";
 import { Link } from "react-router-dom";
 
+interface Buyer {
+  email: string
+  name: string,
+  date: string
+}
+
 interface Payment {
   id?: string;
   _id?: string;
   patientId: string;
-  patientName: string;
+  name: string;
+  buyer: Buyer;
   descriptor: string;
   modality: string;
   sessions: string
@@ -70,7 +77,7 @@ const Billing = () => {
   useEffect(() => {
     const obtenerPacientes = async (): Promise<void> => {
       try {
-        const response = await fetch(`${API_URL}/get-payments`, {
+        const response = await fetch(`${API_LOCAL}/get-payments`, {
           method: 'GET',
           headers: { 'Content-Type': 'application/json' },
           mode: "cors",
@@ -95,10 +102,11 @@ const Billing = () => {
 
     obtenerPacientes();
   }, []); // Se ejecuta solo una vez al montar el componente
+
   useEffect(() => {
     const obtenerPacientes = async (): Promise<void> => {
       try {
-        const response = await fetch(`${API_URL}/get-patients`, {
+        const response = await fetch(`${API_LOCAL}/get-patients`, {
           method: 'GET',
           headers: { 'Content-Type': 'application/json' },
           mode: "cors",
@@ -140,8 +148,8 @@ const Billing = () => {
   useEffect(() => {
     const obtenerRecursos = async (): Promise<void> => {
       try {
-        const response = await fetch(`${API_URL}/get-payments`, {
-          method: "POST",
+        const response = await fetch(`${API_LOCAL}/get-payments`, {
+          method: "GET",
           headers: { "Content-Type": "application/json" },
           mode: "cors",
           credentials: "include",
@@ -162,17 +170,29 @@ const Billing = () => {
         setLoading(false);
       }
     };
-    console.log(payments)
+
     obtenerRecursos();
   }, []);
 
   const [open, setOpen] = useState(false);
-  const [payment, setPayment] = useState<Payment>({ patientId: "", patientName: "", sessions: "", descriptor: "", modality: "", date: Date.now(), path: "", price: "" });
+  const [payment, setPayment] = useState<Payment>({
+    patientId: "", buyer: {
+      email: "",
+      name: "",
+      date: "",
+    }, name: "", sessions: "", descriptor: "", modality: "", date: Date.now(), path: "", price: ""
+  });
 
   const handleOpen = () => setOpen(true);
 
   const handleClose = () => {
-    setPayment({ patientId: "", patientName: "", sessions: "", descriptor: "", modality: "", date: Date.now(), path: "", price: "" });
+    setPayment({
+      patientId: "", name: "", buyer: {
+        email: "",
+        name: "",
+        date: "",
+      }, sessions: "", descriptor: "", modality: "", date: Date.now(), path: "", price: ""
+    });
     setPaymentLink("")
     setOpen(false);
   };
@@ -187,7 +207,7 @@ const Billing = () => {
   const handleAddPayment = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!payment.patientName || !payment.descriptor || !payment.sessions) {
+    if (!payment.name || !payment.descriptor || !payment.sessions) {
       alert("Todos los campos son obligatorios");
       return;
     }
@@ -196,7 +216,9 @@ const Billing = () => {
       _id: payment._id,
       id: payment.id,
       patientId: payment.patientId,
-      patientName: payment.patientName,
+      name: payment.name,
+      buyer: payment.buyer,
+
       sessions: payment.sessions,
       descriptor: payment.descriptor,
       modality: payment.modality,
@@ -222,7 +244,7 @@ const Billing = () => {
         _id: String(payment._id),
         id: String(payment.id),
         patientId: payment.patientId,
-        patientName: payment.patientName,
+        patientName: payment.name,
         sessions: payment.sessions,
         descriptor: payment.descriptor,
         modality: payment.modality,
@@ -308,7 +330,7 @@ const Billing = () => {
     }
   };
 
-console.log(patients)
+  console.log(payments)
   return (
     <div className="rounded-lg border border-gray-300 bg-white p-5 dark:border-gray-700 dark:bg-gray-800">
       <div className="flex justify-between items-center mb-4">
@@ -341,10 +363,10 @@ console.log(patients)
               </tr>
             </thead>
             <tbody>
-              {payments.map((p, index) => (
+              {payments?.length > 0 ? payments?.map((p, index) => (
                 <tr key={index} className="border border-gray-200 dark:border-gray-700">
-                  <td className="p-3">{p.patientName}</td>
-                  <td className="p-3">{p.sessions}</td>
+                  <td className="p-3">{p.buyer.name}</td>
+                  <td className="p-3">{p.date}</td>
                   <td className="p-3">{p.modality}</td>
 
 
@@ -367,7 +389,7 @@ console.log(patients)
 
                   </td>
                 </tr>
-              ))}
+              )): <p className="font-questrial">No hay pagos.</p>}
             </tbody>
           </table>
         </div>
@@ -441,7 +463,7 @@ console.log(patients)
         shareModalOpen && selectedPayment && (
           <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
             <div className="bg-white p-6 rounded-lg shadow-lg w-96">
-              <h3 className="text-lg font-semibold mb-4">Enviar la factura {selectedPatient?._id} a {selectedPayment.patientName}</h3>
+              <h3 className="text-lg font-semibold mb-4">Enviar la factura {selectedPatient?._id} a {selectedPayment.name}</h3>
 
               {patients.length === 0 ? (
                 <p className="text-gray-500">Cargando pacientes...</p>

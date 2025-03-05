@@ -92,7 +92,8 @@ const SignUp: React.FC = () => {
       console.log("Registro exitoso", result);
 
       // Redirigir después de un registro exitoso
-      window.location.href = "http://localhost:5173"; // Cambia esta URL si es necesario
+      window.location.replace("https://www.contygoo.com")
+      /*  window.location.href = "http://localhost:5173";  */// Cambia esta URL si es necesario
 
     } catch (error) {
       console.error("Registration failed", error);
