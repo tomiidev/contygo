@@ -127,7 +127,7 @@ const ListaEspera: FC = () => {
           headers: { 'Content-Type': 'application/json' },
           mode: 'cors',
           credentials: 'include',
-          body: JSON.stringify({ bookingToAccept })
+          body: JSON.stringify({ bookingToAccept: bookingToAccept })
         });
 
         if (!response.ok) throw new Error('Error al aceptar el paciente');
