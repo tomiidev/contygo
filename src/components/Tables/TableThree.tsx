@@ -337,7 +337,7 @@ const ListaPacientes: FC = () => {
                   <th className="py-3 px-4 font-medium text-black dark:text-white">Género</th>
                   <th className="py-3 px-4 font-medium text-black dark:text-white">Teléfono</th>
                   <th className="py-3 px-4 font-medium text-black dark:text-white">Email</th>
-                  <th className="py-3 px-4 font-medium text-black dark:text-white">Agregado</th>
+              {/*     <th className="py-3 px-4 font-medium text-black dark:text-white">Agregado</th> */}
                   <th className="py-3 px-4 font-medium text-black dark:text-white">Acciones</th>
                 </tr>
               </thead>
@@ -349,7 +349,7 @@ const ListaPacientes: FC = () => {
                     <td className="border-b border-gray-300 py-3 px-4" onClick={() => handleClick(paciente._id)}>{paciente.gender}</td>
                     <td className="border-b border-gray-300 py-3 px-4" onClick={() => handleClick(paciente._id)}>{paciente.phone}</td>
                     <td className="border-b border-gray-300 py-3 px-4" onClick={() => handleClick(paciente._id)}>{paciente.email}</td>
-                    <td className="border-b border-gray-300 py-3 px-4" onClick={() => handleClick(paciente._id)}>{formatDateToDMY(paciente.createdAt)}</td>
+               {/*      <td className="border-b border-gray-300 py-3 px-4" onClick={() => handleClick(paciente._id)}>{formatDateToDMY(paciente.createdAt)}</td> */}
                     <td className="border-b border-gray-300 py-3 px-4">
                       <button
                         className="text-blue-500 mr-2"
