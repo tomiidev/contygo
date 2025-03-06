@@ -2,6 +2,7 @@ import { API_LOCAL, API_URL } from '@/hooks/apis';
 import { FC, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Breadcrumb from '../Breadcrumbs/Breadcrumb';
+import { formatDateToDMY } from '@/hooks/dates';
 
 // Interfaz para el paciente
 interface Paciente {
@@ -13,6 +14,7 @@ interface Paciente {
   gender: 'masculino' | 'femenino';
   phone: string,
   message: string;
+  createdAt: string,
 }
 interface ApiResponse {
   data: Paciente[];
@@ -65,6 +67,8 @@ const ListaPacientes: FC = () => {
     _id: "",
     phone: "",
     message: "",
+    createdAt: "",
+
   });
 
   // Estado para manejar si el modal está abierto o cerrado
@@ -114,7 +118,7 @@ const ListaPacientes: FC = () => {
         ...pacientes,
         { ...formData },
       ]);
-      setFormData({ id: "", name: '', age: "", gender: 'masculino', email: "", phone: "", _id: "", message:"" });
+      setFormData({ id: "", name: '', age: "", gender: 'masculino', email: "", phone: "", _id: "", message: "", createdAt: "" });
       return data;
     } catch (error) {
       console.error('Error:', error);
@@ -192,10 +196,10 @@ const ListaPacientes: FC = () => {
       await new Promise((resolve) => setTimeout(resolve, 3000));
       setLoading(false)
       /* setPacientes(pacientes.map(paciente => (paciente._id === formData._id ? formData : paciente))); */
-      setFormData({ id: "", name: '', age:"", gender: 'masculino', email: "", phone: "",_id: "", message: "" });
+      setFormData({ id: "", name: '', age: "", gender: 'masculino', email: "", phone: "", _id: "", message: "", createdAt: "" });
       setIsEditing(false);
       setIsModalOpen(false); // Cerrar el modal después de actualizar
-      
+
       window.location.reload();
       return data;
     } catch (error) {
@@ -211,13 +215,13 @@ const ListaPacientes: FC = () => {
   // Función para cerrar el modal
   const closeModal = () => {
     setIsModalOpen(false);
-    setFormData({ id: "", name: '', age:"", gender: 'masculino', email: "", phone: "",_id: "", message: "" });
+    setFormData({ id: "", name: '', age: "", gender: 'masculino', email: "", phone: "", _id: "", message: "", createdAt: "" });
     setIsEditing(false); // Resetear el estado de edición
   };
 
   return (
     <div>
-       <Breadcrumb pageName="Pacientes" number={pacientes.length}/>
+      <Breadcrumb pageName="Pacientes" number={pacientes.length} />
       <div className="flex justify-end mb-4">
         {/*    <h2 className="text-lg font-semibold">Calendario de citas</h2> */}
         <button
@@ -290,7 +294,7 @@ const ListaPacientes: FC = () => {
                 >
                   <option value="masculino">Masculino</option>
                   <option value="femenino">Femenino</option>
-                
+
                 </select>
               </div>
               <div className="flex justify-between">
@@ -333,6 +337,7 @@ const ListaPacientes: FC = () => {
                   <th className="py-3 px-4 font-medium text-black dark:text-white">Género</th>
                   <th className="py-3 px-4 font-medium text-black dark:text-white">Teléfono</th>
                   <th className="py-3 px-4 font-medium text-black dark:text-white">Email</th>
+                  <th className="py-3 px-4 font-medium text-black dark:text-white">Agregado</th>
                   <th className="py-3 px-4 font-medium text-black dark:text-white">Acciones</th>
                 </tr>
               </thead>
@@ -344,6 +349,7 @@ const ListaPacientes: FC = () => {
                     <td className="border-b border-gray-300 py-3 px-4" onClick={() => handleClick(paciente._id)}>{paciente.gender}</td>
                     <td className="border-b border-gray-300 py-3 px-4" onClick={() => handleClick(paciente._id)}>{paciente.phone}</td>
                     <td className="border-b border-gray-300 py-3 px-4" onClick={() => handleClick(paciente._id)}>{paciente.email}</td>
+                    <td className="border-b border-gray-300 py-3 px-4" onClick={() => handleClick(paciente._id)}>{formatDateToDMY(paciente.createdAt)}</td>
                     <td className="border-b border-gray-300 py-3 px-4">
                       <button
                         className="text-blue-500 mr-2"

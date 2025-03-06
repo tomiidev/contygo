@@ -1,5 +1,6 @@
 import Breadcrumb from '@/components/Breadcrumbs/Breadcrumb';
 import { API_LOCAL, API_URL } from '@/hooks/apis';
+import { formatDateToDMY } from '@/hooks/dates';
 import { FC, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -13,6 +14,7 @@ interface Booking {
   age: string;
   gender: 'Masculino' | 'Femenino' | 'Otro';
   message: string
+  createdAt: string
 }
 interface ApiResponse {
   data: Booking[];
@@ -65,7 +67,8 @@ const ListaEspera: FC = () => {
     phone: '',
     message: '',
     age: "",
-    gender: "Masculino"
+    gender: "Masculino",
+    createdAt: ""
   });
 
   // Estado para manejar si el modal está abierto o cerrado
@@ -117,6 +120,7 @@ const ListaEspera: FC = () => {
     }
   };
   // Función para agregar un paciente
+  console.log(bookingToAccept)
   const handleConfirmAccept = async (e: React.FormEvent) => {
     e.preventDefault();
     if (bookingToAccept) {
@@ -155,6 +159,7 @@ const ListaEspera: FC = () => {
 
   // Función para editar un paciente
   const handleAccept = (b: Booking) => {
+    console.log(b)
     setBookingToAccept(b);
 
     setIsModalOpen(true); // Abrir el modal para editar
@@ -193,6 +198,7 @@ const ListaEspera: FC = () => {
                 <th className="py-3 px-4 font-medium text-black dark:text-white">Email</th>
                 <th className="py-3 px-4 font-medium text-black dark:text-white">Teléfono</th>
                 <th className="py-3 px-4 font-medium text-black dark:text-white">Mensaje</th>
+                <th className="py-3 px-4 font-medium text-black dark:text-white">Agregado</th>
                 <th className="py-3 px-4 font-medium text-black dark:text-white">Acciones</th>
               </tr>
             </thead>
@@ -205,6 +211,7 @@ const ListaEspera: FC = () => {
                   <td className="border-b border-gray-300 py-3 px-4" onClick={() => handleClick(b._id)}>{b.email}</td>
                   <td className="border-b border-gray-300 py-3 px-4" onClick={() => handleClick(b._id)}>{b.phone}</td>
                   <td className="border-b border-gray-300 py-3 px-4" onClick={() => handleClick(b._id)}>{b.message}</td>
+                  <td className="border-b border-gray-300 py-3 px-4" onClick={() => handleClick(b._id)}>{formatDateToDMY(b.createdAt)}</td>
                   <td className="border-b border-gray-300 py-3 px-4">
                     <button
                       className="text-blue-500 mr-2"
