@@ -198,7 +198,7 @@ const ListaEspera: FC = () => {
                 <th className="py-3 px-4 font-medium text-black dark:text-white">Email</th>
                 <th className="py-3 px-4 font-medium text-black dark:text-white">Teléfono</th>
                 <th className="py-3 px-4 font-medium text-black dark:text-white">Mensaje</th>
-                <th className="py-3 px-4 font-medium text-black dark:text-white">Agregado</th>
+               {/*  <th className="py-3 px-4 font-medium text-black dark:text-white">Solicitud</th> */}
                 <th className="py-3 px-4 font-medium text-black dark:text-white">Acciones</th>
               </tr>
             </thead>
@@ -211,7 +211,7 @@ const ListaEspera: FC = () => {
                   <td className="border-b border-gray-300 py-3 px-4" onClick={() => handleClick(b._id)}>{b.email}</td>
                   <td className="border-b border-gray-300 py-3 px-4" onClick={() => handleClick(b._id)}>{b.phone}</td>
                   <td className="border-b border-gray-300 py-3 px-4" onClick={() => handleClick(b._id)}>{b.message}</td>
-                  <td className="border-b border-gray-300 py-3 px-4" onClick={() => handleClick(b._id)}>{formatDateToDMY(b.createdAt)}</td>
+                  {/* <td className="border-b border-gray-300 py-3 px-4" onClick={() => handleClick(b._id)}>{formatDateToDMY(b.createdAt)}</td> */}
                   <td className="border-b border-gray-300 py-3 px-4">
                     <button
                       className="text-blue-500 mr-2"
