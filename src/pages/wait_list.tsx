@@ -92,7 +92,7 @@ const ListaEspera: FC = () => {
     if (bookingToDelete) {
       setLoading(true)
       try {
-        const response = await fetch(`${API_LOCAL}/reject-patient`, {
+        const response = await fetch(`${API_URL}/reject-patient`, {
           method: 'DELETE',
           headers: { 'Content-Type': 'application/json' },
           mode: 'cors',
@@ -122,7 +122,7 @@ const ListaEspera: FC = () => {
     if (bookingToAccept) {
       setLoading(true)
       try {
-        const response = await fetch(`${API_LOCAL}/add-patient`, {
+        const response = await fetch(`${API_URL}/add-patient`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           mode: 'cors',
