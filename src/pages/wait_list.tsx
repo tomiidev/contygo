@@ -1,5 +1,5 @@
 import Breadcrumb from '@/components/Breadcrumbs/Breadcrumb';
-import { API_LOCAL } from '@/hooks/apis';
+import { API_LOCAL, API_URL } from '@/hooks/apis';
 import { FC, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -30,7 +30,7 @@ const ListaEspera: FC = () => {
   useEffect(() => {
     const obtenerPacientes = async (): Promise<void> => {
       try {
-        const response = await fetch(`${API_LOCAL}/get-bookings`, {
+        const response = await fetch(`${API_URL}/get-bookings`, {
           method: 'GET',
           headers: { 'Content-Type': 'application/json' },
           mode: "cors",
@@ -64,8 +64,8 @@ const ListaEspera: FC = () => {
     email: '',
     phone: '',
     message: '',
-    age:"",
-    gender:"Masculino"
+    age: "",
+    gender: "Masculino"
   });
 
   // Estado para manejar si el modal está abierto o cerrado
@@ -87,65 +87,65 @@ const ListaEspera: FC = () => {
 
 
   // Función para eliminar un paciente
-     const handleConfirmDelete = async (e: React.FormEvent) => {
-      e.preventDefault();
-      if (bookingToDelete) {
-        setLoading(true)
-        try {
-          const response = await fetch(`${API_LOCAL}/reject-patient`, {
-            method: 'DELETE',
-            headers: { 'Content-Type': 'application/json' },
-            mode: 'cors',
-            credentials: 'include',
-            body: JSON.stringify({bookingToDelete : bookingToDelete })
-          });
-  
-          if (!response.ok) throw new Error('Error al rechazar el paciente');
-  
-          setBookings((prevPacientes) => prevPacientes.filter((p) => p._id !== bookingToDelete._id));
-  
-          setShowDeleteModal(false);
-          setBookingToDelete(null);
-        } catch (error) {
-          console.error('Error eliminando el paciente:', error);
-        }
-        finally {
-          setLoading(false)
-          setShowDeleteModal(false);
-          setBookingToDelete(null);
-        }
+  const handleConfirmDelete = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (bookingToDelete) {
+      setLoading(true)
+      try {
+        const response = await fetch(`${API_LOCAL}/reject-patient`, {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          mode: 'cors',
+          credentials: 'include',
+          body: JSON.stringify({ bookingToDelete: bookingToDelete })
+        });
+
+        if (!response.ok) throw new Error('Error al rechazar el paciente');
+
+        setBookings((prevPacientes) => prevPacientes.filter((p) => p._id !== bookingToDelete._id));
+
+        setShowDeleteModal(false);
+        setBookingToDelete(null);
+      } catch (error) {
+        console.error('Error eliminando el paciente:', error);
       }
-    }; 
+      finally {
+        setLoading(false)
+        setShowDeleteModal(false);
+        setBookingToDelete(null);
+      }
+    }
+  };
   // Función para agregar un paciente
-     const handleConfirmAccept = async (e: React.FormEvent) => {
-      e.preventDefault();
-      if (bookingToAccept) {
-        setLoading(true)
-        try {
-          const response = await fetch(`${API_LOCAL}/add-patient`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            mode: 'cors',
-            credentials: 'include',
-            body: JSON.stringify({ bookingToAccept })
-          });
-  
-          if (!response.ok) throw new Error('Error al aceptar el paciente');
-  
-          setBookings((prevPacientes) => prevPacientes.filter((p) => p._id !== bookingToAccept._id));
-  
-          setIsModalOpen(false);
-          setBookingToAccept(null);
-        } catch (error) {
-          console.error('Error eliminando el paciente:', error);
-        }
-        finally {
-          setLoading(false)
-          setIsModalOpen(false);
-          setBookingToAccept(null);
-        }
+  const handleConfirmAccept = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (bookingToAccept) {
+      setLoading(true)
+      try {
+        const response = await fetch(`${API_LOCAL}/add-patient`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          mode: 'cors',
+          credentials: 'include',
+          body: JSON.stringify({ bookingToAccept })
+        });
+
+        if (!response.ok) throw new Error('Error al aceptar el paciente');
+
+        setBookings((prevPacientes) => prevPacientes.filter((p) => p._id !== bookingToAccept._id));
+
+        setIsModalOpen(false);
+        setBookingToAccept(null);
+      } catch (error) {
+        console.error('Error eliminando el paciente:', error);
       }
-    }; 
+      finally {
+        setLoading(false)
+        setIsModalOpen(false);
+        setBookingToAccept(null);
+      }
+    }
+  };
 
   const handleDeleteClick = (b: Booking) => {
     setBookingToDelete(b);
@@ -156,7 +156,7 @@ const ListaEspera: FC = () => {
   // Función para editar un paciente
   const handleAccept = (b: Booking) => {
     setBookingToAccept(b);
-   
+
     setIsModalOpen(true); // Abrir el modal para editar
   };
 
@@ -197,7 +197,7 @@ const ListaEspera: FC = () => {
               </tr>
             </thead>
             <tbody>
-              {bookings?.map((b) => (
+              {bookings.length > 0 ? bookings?.map((b) => (
                 <tr key={b._id} className="cursor-pointer hover:bg-gray-100 dark:hover:bg-meta-2">
                   <td className="border-b border-gray-300 py-3 px-4" onClick={() => handleClick(b._id)}>{b.name}</td>
                   <td className="border-b border-gray-300 py-3 px-4" onClick={() => handleClick(b._id)}>{b.age}</td>
@@ -220,7 +220,7 @@ const ListaEspera: FC = () => {
                     </button>
                   </td>
                 </tr>
-              ))}
+              )) : <td className='text-left'>No hay solicitudes nuevas.</td>}
             </tbody>
           </table>
         </div>
@@ -241,7 +241,7 @@ const ListaEspera: FC = () => {
               </button>
               <button
                 disabled={loading}
-                   onClick={handleConfirmDelete} 
+                onClick={handleConfirmDelete}
                 className={`bg-blue-500 text-white px-4 py-2 rounded flex items-center justify-center ${loading ? 'opacity-50 cursor-not-allowed' : ''
                   }`}
               >
@@ -273,7 +273,7 @@ const ListaEspera: FC = () => {
               </button>
               <button
                 disabled={loading}
-                   onClick={handleConfirmAccept} 
+                onClick={handleConfirmAccept}
                 className={`bg-blue-500 text-white px-4 py-2 rounded flex items-center justify-center ${loading ? 'opacity-50 cursor-not-allowed' : ''
                   }`}
               >
