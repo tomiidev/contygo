@@ -3,7 +3,7 @@ import CardDataStats from '../../components/CardDataStats';
 
 import ChartTwo from '../../components/Charts/ChartTwo';
 
-import { API_LOCAL } from '@/hooks/apis';
+import { API_LOCAL, API_URL } from '@/hooks/apis';
 import RegisterPayment from '@/hooks/complete_payment';
 interface Appointment {
   id: string;
@@ -72,7 +72,7 @@ const ECommerce: React.FC = () => {
   useEffect(() => {
     const obtenerCitas = async (): Promise<void> => {
       try {
-        const response = await fetch(`${API_LOCAL}/get-appointments`, {
+        const response = await fetch(`${API_URL}/get-appointments`, {
           method: 'GET',
           headers: { 'Content-Type': 'application/json' },
           mode: "cors",
@@ -109,7 +109,7 @@ const ECommerce: React.FC = () => {
   useEffect(() => {
     const obtenerCitas = async (): Promise<void> => {
       try {
-        const response = await fetch(`${API_LOCAL}/get-patients`, {
+        const response = await fetch(`${API_URL}/get-patients`, {
           method: 'GET',
           headers: { 'Content-Type': 'application/json' },
           mode: "cors",
