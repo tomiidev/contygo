@@ -178,7 +178,7 @@ const ListaPacientes: FC = () => {
     e.preventDefault()
     setLoading(true)
     try {
-      const response = await fetch(`${API_LOCAL}/edit-patient`, {
+      const response = await fetch(`${API_URL}/edit-patient`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import ImagenSvg from "@/images/svg"; // Asumiendo que esta es una imagen en tu proyecto
-import { API_LOCAL } from "@/hooks/apis";
+import { API_LOCAL, API_URL } from "@/hooks/apis";
 
 // Definición de tipos para los errores
 interface Errors {
@@ -70,7 +70,7 @@ const SignUp: React.FC = () => {
 
     // Proceed with the registration logic (e.g., API call)
     try {
-      const response = await fetch(`${API_LOCAL}/create_account_with_email`, {
+      const response = await fetch(`${API_URL}/create_account_with_email`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
