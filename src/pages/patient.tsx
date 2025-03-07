@@ -6,6 +6,7 @@ import { API_LOCAL, API_URL } from '@/hooks/apis';
 import SharedResources from './shared_resources';
 import { BsPencil, BsTrash, BsTrash2 } from 'react-icons/bs';
 import Farm from '@/components/farm';
+import { formatDateToDMY } from '@/hooks/dates';
 
 // Tipos de datos
 type Sesion = {
@@ -190,7 +191,7 @@ const VistaPaciente: React.FC = () => {
                     <tbody>
                         {sesionesPaginadas.length > 0 ? sesionesPaginadas?.map((sesion, index) => (
                             <tr key={index} className="border" onClick={() => navigate(`/patients/${patientId}/${sesion._id}`)}>
-                                <td className="border p-2">{sesion.date}</td>
+                                <td className="border p-2">{formatDateToDMY(sesion.date)}</td>
                                 <td className="border p-2">{sesion.reason}</td>
                                 <td className="border p-2">{sesion.time}</td>
 
