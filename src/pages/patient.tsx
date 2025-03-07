@@ -147,7 +147,7 @@ const VistaPaciente: React.FC = () => {
     );
     const deleteFarmaco = async (fId: string) => {
         try {
-            const response = await fetch(`${API_LOCAL}/delete-patient-farm`, {
+            const response = await fetch(`${API_URL}/delete-patient-farm`, {
                 method: 'DELETE',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
